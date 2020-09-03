@@ -402,6 +402,11 @@ public:
 	static inline bool is_block_dirtied(const buf_block_t* block)
 		MY_ATTRIBUTE((warn_unused_result));
 
+  /** Get the buffer fix count for the block added by this mtr.
+  @param	block	block to be check
+  @return number of buffer count added by this mtr */
+  uint32_t get_fix_count(buf_block_t *block);
+
   /** Write request types */
   enum write_type
   {

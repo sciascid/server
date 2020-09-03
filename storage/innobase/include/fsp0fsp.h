@@ -362,26 +362,25 @@ fsp_header_init_fields(
 void fsp_header_init(fil_space_t* space, ulint size, mtr_t* mtr)
 	MY_ATTRIBUTE((nonnull));
 
-/**********************************************************************//**
-Creates a new segment.
+
+/** Creates a new segment.
+@param	space			tablespace
+@param	byte_offset		offset of the created segment header
+				in the page
+@param	mtr			mini-transaction
+@param	has_done_reservation	Whether fsp_reserve_free_extent() has
+				already been invoked
+@param	block			page where the segment header is
+				placed (nullptr=allocate a new page)
 @return the block where the segment header is placed, x-latched, NULL
 if could not create segment because of lack of space */
 buf_block_t*
 fseg_create(
-	fil_space_t* space, /*!< in,out: tablespace */
-	ulint	page,	/*!< in: page where the segment header is placed: if
-			this is != 0, the page must belong to another segment,
-			if this is 0, a new page will be allocated and it
-			will belong to the created segment */
-	ulint	byte_offset, /*!< in: byte offset of the created segment header
-			on the page */
-	mtr_t*	mtr,
-   	bool	has_done_reservation = false); /*!< in: whether the caller
-			has already done the reservation for the pages with
-			fsp_reserve_free_extents (at least 2 extents: one for
-			the inode and the other for the segment) then there is
-			no need to do the check for this individual
-			operation */
+	fil_space_t*	space,
+	ulint		byte_offset,
+	mtr_t*		mtr,
+	bool 		has_done_reservation=false,
+	buf_block_t*	block=nullptr);
 
 /** Calculate the number of pages reserved by a segment,
 and how many pages are currently used.

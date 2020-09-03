@@ -312,6 +312,28 @@ struct DebugCheck {
 };
 #endif
 
+/** Find buffer fix count of the given block acquired by the
+mini-transaction */
+struct FindBlock
+{
+  uint32_t num_fix;
+  buf_block_t *block;
+
+  FindBlock(buf_block_t *block_buf): num_fix(0), block(block_buf) {}
+  bool operator()(const mtr_memo_slot_t *slot)
+  {
+    if (slot->object != NULL
+        && block == reinterpret_cast<buf_block_t*>(slot->object))
+      num_fix++;
+    return true;
+  }
+
+  uint32_t get_num_fix()
+  {
+    return num_fix;
+  }
+};
+
 /** Release page latches held by the mini-transaction. */
 struct ReleaseBlocks
 {
@@ -880,4 +902,13 @@ void mtr_t::modify(const buf_block_t &block)
   }
   iteration.functor.found->type= static_cast<mtr_memo_type_t>
     (iteration.functor.found->type | MTR_MEMO_MODIFY);
+}
+
+uint32_t mtr_t::get_fix_count(buf_block_t *block)
+{
+  struct FindBlock find_block(block);
+  Iterate<FindBlock> iteration(find_block);
+  if (m_memo.for_each_block(iteration))
+    return iteration.functor.get_num_fix();
+  return 0;
 }
