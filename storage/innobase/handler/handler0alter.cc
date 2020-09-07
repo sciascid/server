@@ -1740,6 +1740,12 @@ set_max_size:
 		}
 	}
 
+	for (Field **vf= altered_table->vfield; vf && *vf; vf++) {
+		if ((*vf)->part_of_key.is_set()) {
+			return false;
+		}
+	}
+
 	return true;
 }
 

@@ -116,6 +116,15 @@ public:
   {
     return buffer[bit_index(n)] & bit_mask(n);
   }
+  bool is_set() const
+  {
+    for (uint i= 0; i < ARRAY_ELEMENTS; ++i)
+    {
+      if (buffer[i] != 0)
+        return true;
+    }
+    return false;
+  }
   void set_prefix(uint prefix_size)
   {
     set_if_smaller(prefix_size, width);
