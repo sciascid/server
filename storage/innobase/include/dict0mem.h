@@ -1892,6 +1892,90 @@ public:
 	/** mysql_row_templ_t for base columns used for compute the virtual
 	columns */
 	dict_vcol_templ_t*			vc_templ;
+
+  static bool is_aux_table(const char *name,
+                           table_id_t *table_id,
+                           index_id_t *index_id)
+  {
+    ulint len= strlen(name);
+    const char* ptr;
+    const char* end= name + len;
+
+    ut_ad(len <= MAX_FULL_NAME_LEN);
+    ptr= static_cast<const char*>(memchr(name, '/', len));
+
+    if (ptr != NULL)
+    {
+      /* We will start the match after the '/' */
+      ++ptr;
+      len = end - ptr;
+    }
+
+    /* All auxiliary tables are prefixed with "FTS_" and the name
+    length will be at the very least greater than 20 bytes. */
+    if (ptr && len > 20 && !memcmp(ptr, "FTS_", 4))
+    {
+      const char* fts_common_tables[]= {"BEING_DELETED","BEING_DELETED_CACHE",
+                                        "CONFIG", "DELETED", "DELETED_CACHE",
+                                        NULL};
+      /* Skip the prefix. */
+      ptr+= 4;
+      len-= 4;
+
+      const char *table_id_ptr= ptr;
+      /* Skip the table id. */
+      ptr= static_cast<const char*>(memchr(ptr, '_', len));
+
+      if (!ptr)
+	return false;
+
+      /* Skip the underscore. */
+      ++ptr;
+      ut_ad(end > ptr);
+      len= end - ptr;
+
+      /* First search the common table suffix array. */
+      for (ulint i = 0; fts_common_tables[i]; ++i)
+      {
+        if (!memcmp(ptr, fts_common_tables[i], len))
+          return true;
+      }
+
+      /* Could be obsolete common tables. */
+      if (!memcmp(ptr, "ADDED", len) || !memcmp(ptr, "STOPWORDS", len))
+	return true;
+
+      const char* index_id_ptr= ptr;
+      /* Skip the index id. */
+      ptr= static_cast<const char*>(memchr(ptr, '_', len));
+      if (!ptr)
+	return false;
+
+      sscanf(index_id_ptr, UINT64PFx, index_id);
+      sscanf(table_id_ptr, UINT64PFx, table_id);
+
+      /* Skip the underscore. */
+      ++ptr;
+      ut_a(end > ptr);
+      len= end - ptr;
+
+      if (len > 7)
+	return false;
+
+      /* Search the FT index specific array. */
+      for (ulint i = 0; i < FTS_NUM_AUX_INDEX; ++i)
+      {
+        if (!memcmp(ptr, "INDEX_", len - 1))
+          return true;
+      }
+
+      /* Other FT index specific table(s). */
+      if (!memcmp(ptr, "DOC_ID", len))
+	return true;
+    }
+
+    return false;
+  }
 };
 
 inline bool table_name_t::is_temporary() const
