@@ -4012,7 +4012,6 @@ fail:
 	/* Reset the system variables in the recovery module. */
 	trx_pool_init();
 
-	ut_crc32_init();
 	my_checksum_init();
 	recv_sys.create();
 
@@ -5386,7 +5385,6 @@ static bool xtrabackup_prepare_func(char** argv)
 
 		sync_check_init();
 		ut_d(sync_check_enable());
-		ut_crc32_init();
 		recv_sys.create();
 		log_sys.create();
 		recv_sys.recovery_on = true;

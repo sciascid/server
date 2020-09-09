@@ -31,14 +31,11 @@
 
 #include <altivec.h>
 
+#define CRC32_FUNCTION my_checksum
+#include "pcc_crc32_constants.h"
 #define POWER8_INTRINSICS
 #define CRC_TABLE
 
-#ifdef CRC32_CONSTANTS_HEADER
-#include CRC32_CONSTANTS_HEADER
-#else
-#include "crc32_constants.h"
-#endif
 
 #define VMX_ALIGN	16
 #define VMX_ALIGN_MASK	(VMX_ALIGN-1)
@@ -64,9 +61,6 @@ static unsigned int crc32_align(unsigned int crc, const unsigned char *p,
 static unsigned int __attribute__ ((aligned (32)))
 __crc32_vpmsum(unsigned int crc, const void* p, unsigned long len);
 
-#ifndef CRC32_FUNCTION
-#define CRC32_FUNCTION  crc32_vpmsum
-#endif
 
 unsigned int CRC32_FUNCTION(unsigned int crc, const unsigned char *p,
 			    unsigned long len)

@@ -914,6 +914,9 @@ int crc32_aarch64_available(void);
 const char *crc32c_aarch64_available(void);
 #endif
 
+extern uint32 my_crc32c(uint32, const void *, size_t);
+extern const char *my_crc32c_implementation();
+
 #ifdef DBUG_ASSERT_EXISTS
 extern void my_debug_put_break_here(void);
 #else
